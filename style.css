@@ -25,7 +25,7 @@ body {
     line-height: 1.6;
     color: var(--text-dark);
     overflow-x: hidden;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--bg-gradient);
     min-height: 100vh;
 }
 
@@ -155,7 +155,6 @@ body::before {
 
 /* Hero Section */
 .hero {
-    
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -164,6 +163,7 @@ body::before {
     padding: 100px 20px 50px;
     position: relative;
     overflow: hidden;
+    transition: background 0.5s ease;
 }
 
 .hero::before {
@@ -205,7 +205,6 @@ body::before {
 }
 
 .hero-title {
-    
     font-family: 'Playfair Display', serif;
     font-size: 3.5rem;
     font-weight: 700;
@@ -216,6 +215,7 @@ body::before {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    transition: all 0.3s ease;
 }
 
 .hero-subtitle {
@@ -263,7 +263,9 @@ body::before {
         inset 0 0 20px rgba(255, 255, 255, 0.1);
     position: relative;
     overflow: hidden;
+    transition: all 0.3s ease;
 }
+
 .placeholder-image img {
     /* margin-top: -25px; */
     width: 100%;
@@ -347,6 +349,203 @@ section {
     width: 60px;
     height: 3px;
     background: var(--primary-color);
+}
+
+/* Love Counter Section */
+.love-counter {
+    background: linear-gradient(135deg, #ff6b9d 0%, #feca57 100%);
+    color: var(--text-light);
+    padding: 80px 0;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.5s ease;
+}
+
+.love-counter::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="hearts3" x="0" y="0" width="25" height="25" patternUnits="userSpaceOnUse"><text x="3" y="18" font-size="14" fill="rgba(255,255,255,0.15)">♥</text></pattern></defs><rect width="100" height="100" fill="url(%23hearts3)"/></svg>');
+    animation: float 20s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.counter-container {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.counter-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    background: linear-gradient(45deg, #ffffff, #feca57);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.anniversary-date {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    font-size: 1.3rem;
+    margin-bottom: 3rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    max-width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.anniversary-date i {
+    color: #ff6b9d;
+    animation: heartbeat 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 10px rgba(255, 107, 157, 0.5));
+}
+
+.counter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.counter-item {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 2rem 1rem;
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        inset 0 0 20px rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.counter-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+    animation: gradientShift 3s ease-in-out infinite;
+}
+
+.counter-item:hover {
+    transform: translateY(-10px) scale(1.05);
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.15),
+        0 0 30px rgba(255, 107, 157, 0.3);
+    border-color: rgba(255, 107, 157, 0.3);
+}
+
+.counter-number {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    margin-bottom: 0.5rem;
+    font-family: 'Playfair Display', serif;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.counter-label {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+}
+
+.valentine-message {
+    position: relative;
+    padding: 2rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 25px;
+    border: 1px solid var(--glass-border);
+    box-shadow: 
+        0 15px 35px rgba(0, 0, 0, 0.1),
+        inset 0 0 30px rgba(255, 255, 255, 0.2);
+    max-width: 600px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.floating-hearts {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+}
+
+.floating-hearts i {
+    color: #ff6b9d;
+    font-size: 1.5rem;
+    animation: floatUp 3s ease-in-out infinite;
+    animation-delay: calc(var(--i) * 0.2s);
+}
+
+.floating-hearts i:nth-child(1) { --i: 0; }
+.floating-hearts i:nth-child(2) { --i: 1; }
+.floating-hearts i:nth-child(3) { --i: 2; }
+.floating-hearts i:nth-child(4) { --i: 3; }
+.floating-hearts i:nth-child(5) { --i: 4; }
+
+@keyframes floatUp {
+    0%, 100% { 
+        transform: translateY(0px) scale(1);
+        opacity: 0.8;
+    }
+    50% { 
+        transform: translateY(-20px) scale(1.2);
+        opacity: 1;
+    }
+}
+
+.love-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    color: rgba(255, 255, 255, 0.95);
+    font-style: italic;
+}
+
+.valentine-wish {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #ffffff;
+    text-shadow: 0 0 15px rgba(255, 107, 157, 0.5);
+    background: linear-gradient(45deg, #ff6b9d, #feca57);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 200% 200%;
+    animation: gradientShift 4s ease-in-out infinite;
 }
 
 /* Memories Section */
