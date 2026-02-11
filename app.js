@@ -459,6 +459,59 @@ function createValentineHearts() {
     }
 }
 
+// Create beautiful flowers for Valentine's Day
+function createValentineFlowers() {
+    const flowerEmojis = ['🌹', '🌸', '🌺', '🌷', '🌻', '🌹', '💐', '🌹'];
+    const colors = ['#ff6b9d', '#ff69b4', '#ff1493', '#ff69b4', '#ffc0cb', '#ffb6c1'];
+    
+    for (let i = 0; i < 25; i++) {
+        setTimeout(() => {
+            const flower = document.createElement('div');
+            flower.innerHTML = flowerEmojis[Math.floor(Math.random() * flowerEmojis.length)];
+            flower.style.position = 'fixed';
+            flower.style.left = Math.random() * 100 + '%';
+            flower.style.top = '-50px';
+            flower.style.fontSize = (Math.random() * 25 + 20) + 'px';
+            flower.style.color = colors[Math.floor(Math.random() * colors.length)];
+            flower.style.pointerEvents = 'none';
+            flower.style.zIndex = '9998';
+            flower.style.animation = `fallDown ${Math.random() * 4 + 3}s ease-in-out forwards`;
+            flower.style.textShadow = '0 0 15px rgba(255, 107, 157, 0.6)';
+            flower.style.transform = `rotate(${Math.random() * 360}deg)`;
+            
+            document.body.appendChild(flower);
+            
+            setTimeout(() => {
+                flower.remove();
+            }, 7000);
+        }, i * 150);
+    }
+}
+
+// Add falling flowers animation
+const flowerStyle = document.createElement('style');
+flowerStyle.textContent = `
+    @keyframes fallDown {
+        0% {
+            opacity: 0;
+            transform: translateY(-50px) rotate(0deg) scale(0.5);
+        }
+        10% {
+            opacity: 1;
+            transform: translateY(0px) rotate(45deg) scale(1);
+        }
+        90% {
+            opacity: 1;
+            transform: translateY(90vh) rotate(315deg) scale(1);
+        }
+        100% {
+            opacity: 0;
+            transform: translateY(100vh) rotate(360deg) scale(0.8);
+        }
+    }
+`;
+document.head.appendChild(flowerStyle);
+
 // Check if today is Valentine's Day (February 14th)
 function checkValentineDay() {
     const today = new Date();
@@ -467,8 +520,9 @@ function checkValentineDay() {
     if (isValentineDay) {
         // Create special Valentine's Day effects
         createValentineHearts();
+        createValentineFlowers();
         
-        // Show Valentine's Day message
+        // Show Valentine's Day message with flowers
         const valentineMessage = document.createElement('div');
         valentineMessage.innerHTML = `
             <div style="
@@ -478,46 +532,66 @@ function checkValentineDay() {
                 transform: translate(-50%, -50%);
                 background: linear-gradient(135deg, #ff6b9d, #feca57);
                 color: white;
-                padding: 2rem 3rem;
-                border-radius: 20px;
+                padding: 2.5rem 3.5rem;
+                border-radius: 25px;
                 text-align: center;
                 z-index: 10000;
-                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-                backdrop-filter: blur(10px);
+                box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+                backdrop-filter: blur(15px);
                 animation: pulse 2s ease-in-out infinite;
+                border: 2px solid rgba(255, 255, 255, 0.3);
             ">
-                <h2 style="font-size: 2rem; margin-bottom: 1rem; font-family: 'Playfair Display', serif;">
+                <div style="font-size: 3rem; margin-bottom: 1rem; animation: bounce 1s ease-in-out infinite;">
+                    🌹💕🌸
+                </div>
+                <h2 style="font-size: 2.2rem; margin-bottom: 1rem; font-family: 'Playfair Display', serif; text-shadow: 0 2px 10px rgba(0,0,0,0.3);">
                     Happy Valentine's Day! 💕
                 </h2>
-                <p style="font-size: 1.2rem; margin-bottom: 1rem;">
+                <p style="font-size: 1.3rem; margin-bottom: 1rem; text-shadow: 0 1px 5px rgba(0,0,0,0.2);">
                     Today celebrates our beautiful love story
                 </p>
-                <p style="font-size: 1rem; opacity: 0.9;">
-                    Every moment with you is precious
+                <p style="font-size: 1.1rem; opacity: 0.95; margin-bottom: 1.5rem; text-shadow: 0 1px 5px rgba(0,0,0,0.2);">
+                    Every moment with you is precious, my love 🌹
                 </p>
+                <div style="font-size: 2rem; margin-bottom: 1.5rem; animation: float 2s ease-in-out infinite;">
+                    💐🌺🌷🌹
+                </div>
                 <button onclick="this.parentElement.parentElement.remove()" style="
                     margin-top: 1rem;
-                    padding: 0.5rem 1.5rem;
+                    padding: 0.8rem 2rem;
                     background: white;
                     color: #ff6b9d;
                     border: none;
                     border-radius: 25px;
                     cursor: pointer;
                     font-weight: 600;
-                ">
-                    Close
+                    font-size: 1.1rem;
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    Continue to Our Story 💕
                 </button>
             </div>
         `;
         
         document.body.appendChild(valentineMessage);
         
-        // Auto-remove after 10 seconds
+        // Create periodic flowers while message is shown
+        const flowerInterval = setInterval(() => {
+            if (valentineMessage.parentElement) {
+                createValentineFlowers();
+            } else {
+                clearInterval(flowerInterval);
+            }
+        }, 8000);
+        
+        // Auto-remove after 15 seconds
         setTimeout(() => {
             if (valentineMessage.parentElement) {
                 valentineMessage.remove();
+                clearInterval(flowerInterval);
             }
-        }, 10000);
+        }, 15000);
     }
 }
 
