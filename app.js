@@ -1,3 +1,118 @@
+// Login System
+const CORRECT_PASSWORD = '111123';
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Check if user is already logged in
+    const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+    if (isLoggedIn === 'true') {
+        showMainContent();
+    }
+
+    // Login form submission
+    const loginForm = document.getElementById('loginForm');
+    const passwordInput = document.getElementById('passwordInput');
+    const errorMessage = document.getElementById('errorMessage');
+    const loginOverlay = document.getElementById('loginOverlay');
+    const mainContent = document.getElementById('mainContent');
+
+    if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const enteredPassword = passwordInput.value.trim();
+            
+            if (enteredPassword === CORRECT_PASSWORD) {
+                // Successful login
+                sessionStorage.setItem('isLoggedIn', 'true');
+                showMainContent();
+                
+                // Create celebration effect
+                createLoginSuccessEffect();
+            } else {
+                // Failed login
+                showError();
+                
+                // Shake the login card
+                const loginCard = document.querySelector('.login-card');
+                loginCard.style.animation = 'shake 0.5s ease-in-out';
+                setTimeout(() => {
+                    loginCard.style.animation = '';
+                }, 500);
+            }
+        });
+    }
+
+    function showMainContent() {
+        if (loginOverlay) {
+            loginOverlay.style.opacity = '0';
+            loginOverlay.style.transition = 'opacity 0.5s ease-out';
+            
+            setTimeout(() => {
+                loginOverlay.style.display = 'none';
+                if (mainContent) {
+                    mainContent.style.display = 'block';
+                    mainContent.style.opacity = '0';
+                    mainContent.style.transition = 'opacity 0.5s ease-in';
+                    
+                    setTimeout(() => {
+                        mainContent.style.opacity = '1';
+                    }, 50);
+                }
+            }, 500);
+        }
+    }
+
+    function showError() {
+        if (errorMessage) {
+            errorMessage.classList.add('show');
+            passwordInput.value = '';
+            passwordInput.focus();
+            
+            // Hide error message after 3 seconds
+            setTimeout(() => {
+                errorMessage.classList.remove('show');
+            }, 3000);
+        }
+    }
+
+    function createLoginSuccessEffect() {
+        // Create floating hearts for successful login
+        const colors = ['#ff6b9d', '#feca57', '#ff9ff3', '#ff6348'];
+        const heartSymbols = ['❤', '💕', '💖', '💗', '💝'];
+        
+        for (let i = 0; i < 20; i++) {
+            setTimeout(() => {
+                const heart = document.createElement('div');
+                heart.innerHTML = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
+                heart.style.position = 'fixed';
+                heart.style.left = Math.random() * 100 + '%';
+                heart.style.top = '100%';
+                heart.style.fontSize = (Math.random() * 20 + 15) + 'px';
+                heart.style.color = colors[Math.floor(Math.random() * colors.length)];
+                heart.style.pointerEvents = 'none';
+                heart.style.zIndex = '99999';
+                heart.style.animation = `floatUp ${Math.random() * 3 + 2}s ease-out forwards`;
+                heart.style.textShadow = '0 0 10px rgba(255, 107, 157, 0.5)';
+                
+                document.body.appendChild(heart);
+                
+                setTimeout(() => {
+                    heart.remove();
+                }, 5000);
+            }, i * 100);
+        }
+    }
+
+    // Add enter key support for password field
+    if (passwordInput) {
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                loginForm.dispatchEvent(new Event('submit'));
+            }
+        });
+    }
+});
+
 // Mobile Navigation Toggle
 const navToggle = document.querySelector('.nav-toggle');
 const navMenu = document.querySelector('.nav-menu');
