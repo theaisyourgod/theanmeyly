@@ -1,5 +1,5 @@
 // Login System - Admin Only
-const ADMIN_PASSWORD = 'admin123';
+const ADMIN_PASSWORD = '111123';
 const LOCK_TIMEOUT = 15 * 60 * 1000; // 15 minutes in milliseconds
 let lockTimer;
 let isAdmin = false;
@@ -1014,3 +1014,4 @@ function setupImageUpload() {
         });
     }
 }
+
