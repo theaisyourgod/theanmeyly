@@ -10,14 +10,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Login Overlay -->
-    <div id="loginOverlay" class="login-overlay">
+    <!-- Login Overlay (Hidden by Default) -->
+    <div id="loginOverlay" class="login-overlay" style="display: none;">
         <div class="login-container">
             <div class="login-card">
                 <div class="login-header">
-                    <i class="fas fa-heart"></i>
-                    <h2>Our Memories</h2>
-                    <p>Enter the password to access our love story</p>
+                    <i class="fas fa-crown"></i>
+                    <h2>Admin Access</h2>
+                    <p>Enter admin password to manage gallery</p>
+                    <div style="margin-top: 10px; font-size: 0.85rem; opacity: 0.8;">
+                        <!-- <div style="color: #667eea; font-weight: 600;">Admin: admin123</div> -->
+                    </div>
                 </div>
                 <form id="loginForm" class="login-form">
                     <div class="input-group">
@@ -43,8 +46,8 @@
         </div>
     </div>
 
-    <!-- Main Content (Initially Hidden) -->
-    <div id="mainContent" class="main-content" style="display: none;">
+    <!-- Main Content (Visible by Default) -->
+    <div id="mainContent" class="main-content" style="display: block;">
         <nav class="navbar">
             <div class="nav-container">
                 <div class="nav-logo">
@@ -57,6 +60,7 @@
                     <li><a href="#timeline">Timeline</a></li>
                     <li><a href="#gallery">Gallery</a></li>
                     <li><a href="#love-letter">Love Letter</a></li>
+                    <li><a href="#" id="adminLoginBtn" class="admin-login-btn"><i class="fas fa-crown"></i> Admin</a></li>
                 </ul>
                 <div class="nav-toggle" >
                     <span></span>
