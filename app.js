@@ -1,11 +1,26 @@
-// Login System
-const CORRECT_PASSWORD = '111123';
+// Login System - Admin Only
+const ADMIN_PASSWORD = 'admin123';
+const LOCK_TIMEOUT = 15 * 60 * 1000; // 15 minutes in milliseconds
+let lockTimer;
+let isAdmin = false;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Check if user is already logged in
+    // Check if admin is already logged in
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
-    if (isLoggedIn === 'true') {
-        showMainContent();
+    const storedIsAdmin = sessionStorage.getItem('isAdmin');
+    if (isLoggedIn === 'true' && storedIsAdmin === 'true') {
+        isAdmin = true;
+        showAdminFeatures();
+        startLockTimer();
+    }
+
+    // Admin login button click
+    const adminLoginBtn = document.getElementById('adminLoginBtn');
+    if (adminLoginBtn) {
+        adminLoginBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showLoginOverlay();
+        });
     }
 
     // Login form submission
@@ -21,12 +36,14 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const enteredPassword = passwordInput.value.trim();
             
-            if (enteredPassword === CORRECT_PASSWORD) {
-                // Successful login
+            if (enteredPassword === ADMIN_PASSWORD) {
+                // Admin login successful
+                isAdmin = true;
                 sessionStorage.setItem('isLoggedIn', 'true');
-                showMainContent();
-                
-                // Create celebration effect
+                sessionStorage.setItem('isAdmin', 'true');
+                hideLoginOverlay();
+                showAdminFeatures();
+                startLockTimer();
                 createLoginSuccessEffect();
             } else {
                 // Failed login
@@ -42,24 +59,44 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function showMainContent() {
+    function showLoginOverlay() {
+        const loginOverlay = document.getElementById('loginOverlay');
+        const passwordInput = document.getElementById('passwordInput');
+        const errorMessage = document.getElementById('errorMessage');
+        
         if (loginOverlay) {
+            loginOverlay.style.display = 'flex';
             loginOverlay.style.opacity = '0';
-            loginOverlay.style.transition = 'opacity 0.5s ease-out';
+            
+            // Clear previous input and errors
+            if (passwordInput) passwordInput.value = '';
+            if (errorMessage) errorMessage.classList.remove('show');
             
             setTimeout(() => {
+                loginOverlay.style.opacity = '1';
+            }, 50);
+            
+            // Focus on password input
+            setTimeout(() => {
+                if (passwordInput) passwordInput.focus();
+            }, 300);
+        }
+    }
+
+    function hideLoginOverlay() {
+        const loginOverlay = document.getElementById('loginOverlay');
+        
+        if (loginOverlay) {
+            loginOverlay.style.opacity = '0';
+            setTimeout(() => {
                 loginOverlay.style.display = 'none';
-                if (mainContent) {
-                    mainContent.style.display = 'block';
-                    mainContent.style.opacity = '0';
-                    mainContent.style.transition = 'opacity 0.5s ease-in';
-                    
-                    setTimeout(() => {
-                        mainContent.style.opacity = '1';
-                    }, 50);
-                }
             }, 500);
         }
+    }
+
+    function showMainContent() {
+        // This function is no longer needed since content is visible by default
+        // Keeping for compatibility
     }
 
     function showError() {
@@ -111,6 +148,123 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+});
+
+// Auto-lock functionality
+function startLockTimer() {
+    // Clear any existing timer
+    if (lockTimer) {
+        clearTimeout(lockTimer);
+    }
+    
+    // Set new timer for 15 minutes
+    lockTimer = setTimeout(() => {
+        lockWebsite();
+    }, LOCK_TIMEOUT);
+}
+
+function resetLockTimer() {
+    // Reset timer on user activity
+    const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+    if (isLoggedIn === 'true') {
+        startLockTimer();
+    }
+}
+
+function lockWebsite() {
+    // Clear login session
+    sessionStorage.removeItem('isLoggedIn');
+    sessionStorage.removeItem('isAdmin');
+    isAdmin = false;
+    
+    // Hide admin features
+    hideAdminFeatures();
+    
+    // Show lock notification
+    showLockNotification();
+}
+
+function showLockNotification() {
+    const notification = document.createElement('div');
+    notification.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ff6b9d, #feca57);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 10001;
+            animation: slideInRight 0.5s ease-out;
+            font-size: 0.9rem;
+            max-width: 300px;
+        ">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-lock" style="font-size: 1.2rem;"></i>
+                <div>
+                    <strong>Session Expired</strong><br>
+                    <span style="opacity: 0.9;">Please login again for security</span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.style.animation = 'slideOutRight 0.5s ease-out';
+            setTimeout(() => {
+                notification.remove();
+            }, 500);
+        }
+    }, 5000);
+}
+
+// Add slide animations for notifications
+const notificationStyle = document.createElement('style');
+notificationStyle.textContent = `
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+    }
+`;
+document.head.appendChild(notificationStyle);
+
+// Monitor user activity to reset timer
+document.addEventListener('DOMContentLoaded', () => {
+    // Events that indicate user activity
+    const activityEvents = [
+        'mousedown', 'mousemove', 'keypress', 
+        'scroll', 'touchstart', 'click', 'keydown'
+    ];
+    
+    activityEvents.forEach(event => {
+        document.addEventListener(event, resetLockTimer, true);
+    });
+    
+    // Also reset timer when window gains focus
+    window.addEventListener('focus', resetLockTimer);
 });
 
 // Mobile Navigation Toggle
@@ -381,6 +535,43 @@ mobileMenuStyle.textContent = `
     }
 `;
 document.head.appendChild(mobileMenuStyle);
+
+// Admin Login Button Styling
+const adminButtonStyle = document.createElement('style');
+adminButtonStyle.textContent = `
+    .admin-login-btn {
+        color: #000000 !important;
+        font-weight: 600;
+        padding: 8px 15px;
+        border-radius: 20px;
+        background: rgba(93, 116, 220, 0.1);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(102, 126, 234, 0.3);
+    }
+    
+    .admin-login-btn:hover {
+        background: rgba(0, 0, 0, 0.95) !important;
+        transform: translateY(-2px);
+        color:rgba(255, 255, 255, 0.95) !important;
+        box-shadow : 0 5px 15px rgb(102, 126, 234);
+    }
+    
+    .admin-login-btn i {
+        margin-right: 5px;
+        border-radius: 20px;
+    }
+    .admin-login-btn i a:hover{
+        display:none !important;
+    }
+    
+    @media (max-width: 768px) {
+        .admin-login-btn {
+            margin-top: 10px;
+            text-align: center;
+        }
+    }
+`;
+document.head.appendChild(adminButtonStyle);
 
 // Love Counter - Anniversary since 11/11/2023
 function updateLoveCounter() {
@@ -697,3 +888,129 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000);
     }
 });
+
+// Admin Functions
+function showAdminFeatures() {
+    // Show admin upload button in gallery section
+    const gallerySection = document.querySelector('#gallery .container');
+    if (gallerySection) {
+        const existingAdminPanel = document.getElementById('adminPanel');
+        if (!existingAdminPanel) {
+            const adminPanel = document.createElement('div');
+            adminPanel.id = 'adminPanel';
+            adminPanel.innerHTML = `
+                <div class="admin-controls" style="
+                    background: linear-gradient(135deg, #667eea, #764ba2);
+                    color: white;
+                    padding: 1.5rem;
+                    border-radius: 15px;
+                    margin-bottom: 2rem;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                ">
+                    <h3 style="margin-bottom: 1rem; font-size: 1.3rem;">
+                        <i class="fas fa-crown"></i> Admin Panel
+                    </h3>
+                    <div class="upload-section">
+                        <label for="imageUpload" style="
+                            display: inline-block;
+                            padding: 0.8rem 1.5rem;
+                            background: white;
+                            color: #667eea;
+                            border-radius: 25px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            margin-right: 1rem;
+                            transition: all 0.3s ease;
+                        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            <i class="fas fa-upload"></i> Upload Images
+                        </label>
+                        <input type="file" id="imageUpload" accept="image/*" multiple style="display: none;">
+                        <span id="uploadStatus" style="opacity: 0.8;">Select images to upload</span>
+                    </div>
+                    <div id="uploadedImages" style="margin-top: 1rem;"></div>
+                </div>
+            `;
+            gallerySection.insertBefore(adminPanel, gallerySection.firstChild);
+            
+            // Add upload functionality
+            setupImageUpload();
+        }
+    }
+}
+
+function hideAdminFeatures() {
+    // Hide admin panel
+    const adminPanel = document.getElementById('adminPanel');
+    if (adminPanel) {
+        adminPanel.remove();
+    }
+}
+
+function setupImageUpload() {
+    const imageUpload = document.getElementById('imageUpload');
+    const uploadStatus = document.getElementById('uploadStatus');
+    const uploadedImages = document.getElementById('uploadedImages');
+    
+    if (imageUpload) {
+        imageUpload.addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            
+            if (files.length > 0) {
+                uploadStatus.textContent = `Processing ${files.length} image(s)...`;
+                
+                files.forEach((file, index) => {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        // Create new gallery item
+                        const galleryGrid = document.querySelector('.gallery-grid');
+                        if (galleryGrid) {
+                            const newItem = document.createElement('div');
+                            newItem.className = 'gallery-item';
+                            newItem.innerHTML = `
+                                <div class="gallery-placeholder" style="position: relative;">
+                                    <img src="${e.target.result}" alt="Uploaded image" style="width: 100%; height: 100%; object-fit: cover;">
+                                    <div style="
+                                        position: absolute;
+                                        top: 5px;
+                                        right: 5px;
+                                        background: rgba(255,255,255,0.9);
+                                        color: #667eea;
+                                        padding: 5px 10px;
+                                        border-radius: 15px;
+                                        font-size: 0.8rem;
+                                        font-weight: 600;
+                                    ">New</div>
+                                </div>
+                            `;
+                            
+                            // Add animation
+                            newItem.style.opacity = '0';
+                            newItem.style.transform = 'scale(0.8)';
+                            galleryGrid.appendChild(newItem);
+                            
+                            setTimeout(() => {
+                                newItem.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                                newItem.style.opacity = '1';
+                                newItem.style.transform = 'scale(1)';
+                            }, index * 100);
+                        }
+                        
+                        // Update status
+                        if (index === files.length - 1) {
+                            uploadStatus.textContent = `Successfully uploaded ${files.length} image(s)!`;
+                            uploadStatus.style.color = '#4ade80';
+                            
+                            setTimeout(() => {
+                                uploadStatus.textContent = 'Select images to upload';
+                                uploadStatus.style.color = '';
+                            }, 3000);
+                        }
+                    };
+                    
+                    reader.readAsDataURL(file);
+                });
+            }
+        });
+    }
+}
