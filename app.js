@@ -41,6 +41,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 isAdmin = true;
                 sessionStorage.setItem('isLoggedIn', 'true');
                 sessionStorage.setItem('isAdmin', 'true');
+                
+                // Track admin session
+                const adminSessions = parseInt(localStorage.getItem('adminSessions') || '0');
+                localStorage.setItem('adminSessions', (adminSessions + 1).toString());
+                
                 hideLoginOverlay();
                 showAdminFeatures();
                 startLockTimer();
@@ -896,6 +901,17 @@ function checkAnniversary() {
 
 // Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+    // Track visits
+    trackVisit();
+    
+    // Track visitor after IP detection
+    setTimeout(() => {
+        trackVisitor();
+    }, 2000); // Wait for IP detection
+    
+    // Load stored images for all users
+    loadStoredImages();
+    
     // Update counter immediately
     updateLoveCounter();
     
@@ -932,6 +948,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+function trackVisit() {
+    const totalVisits = parseInt(localStorage.getItem('totalVisits') || '0');
+    localStorage.setItem('totalVisits', (totalVisits + 1).toString());
+}
+
 // Admin Functions
 function showAdminFeatures() {
     // Show admin upload button in gallery section
@@ -945,43 +966,263 @@ function showAdminFeatures() {
                 <div class="admin-controls" style="
                     background: linear-gradient(135deg, #667eea, #764ba2);
                     color: white;
-                    padding: 1.5rem;
+                    padding: 2rem;
                     border-radius: 15px;
                     margin-bottom: 2rem;
                     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
                 ">
-                    <h3 style="margin-bottom: 1rem; font-size: 1.3rem;">
-                        <i class="fas fa-crown"></i> Admin Panel
+                    <h3 style="margin-bottom: 1.5rem; font-size: 1.5rem; text-align: center;">
+                        <i class="fas fa-crown"></i> Full Admin Dashboard
                     </h3>
-                    <div class="upload-section">
-                        <label for="imageUpload" style="
-                            display: inline-block;
-                            padding: 0.8rem 1.5rem;
-                            background: white;
-                            color: #667eea;
-                            border-radius: 25px;
-                            cursor: pointer;
-                            font-weight: 600;
-                            margin-right: 1rem;
-                            transition: all 0.3s ease;
-                        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                            <i class="fas fa-upload"></i> Upload Images
-                        </label>
-                        <input type="file" id="imageUpload" accept="image/*" multiple style="display: none;">
-                        <span id="uploadStatus" style="opacity: 0.8;">Select images to upload</span>
+                    
+                    <!-- Admin Stats -->
+                    <div class="admin-stats" style="
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                        gap: 1rem;
+                        margin-bottom: 2rem;
+                    ">
+                        <div class="stat-card" style="
+                            background: rgba(255,255,255,0.1);
+                            padding: 1rem;
+                            border-radius: 10px;
+                            text-align: center;
+                        ">
+                            <div style="font-size: 2rem; font-weight: bold;" id="totalImages">0</div>
+                            <div style="font-size: 0.9rem; opacity: 0.8;">Total Images</div>
+                        </div>
+                        <div class="stat-card" style="
+                            background: rgba(255,255,255,0.1);
+                            padding: 1rem;
+                            border-radius: 10px;
+                            text-align: center;
+                        ">
+                            <div style="font-size: 2rem; font-weight: bold;" id="totalVisits">0</div>
+                            <div style="font-size: 0.9rem; opacity: 0.8;">Total Visits</div>
+                        </div>
+                        <div class="stat-card" style="
+                            background: rgba(255,255,255,0.1);
+                            padding: 1rem;
+                            border-radius: 10px;
+                            text-align: center;
+                        ">
+                            <div style="font-size: 2rem; font-weight: bold;" id="adminSessions">0</div>
+                            <div style="font-size: 0.9rem; opacity: 0.8;">Admin Sessions</div>
+                        </div>
                     </div>
-                    <div id="uploadedImages" style="margin-top: 1rem;"></div>
+                    
+                    <!-- Admin Controls -->
+                    <div class="admin-tabs" style="
+                        display: flex;
+                        gap: 0.5rem;
+                        margin-bottom: 1.5rem;
+                        border-bottom: 1px solid rgba(255,255,255,0.2);
+                    ">
+                        <button class="tab-btn active" data-tab="gallery" style="
+                            background: none;
+                            border: none;
+                            color: white;
+                            padding: 0.5rem 1rem;
+                            cursor: pointer;
+                            border-bottom: 2px solid white;
+                        ">Gallery</button>
+                        <button class="tab-btn" data-tab="content" style="
+                            background: none;
+                            border: none;
+                            color: rgba(255,255,255,0.7);
+                            padding: 0.5rem 1rem;
+                            cursor: pointer;
+                        ">Content</button>
+                        <button class="tab-btn" data-tab="analytics" style="
+                            background: none;
+                            border: none;
+                            color: rgba(255,255,255,0.7);
+                            padding: 0.5rem 1rem;
+                            cursor: pointer;
+                        ">Analytics</button>
+                        <button class="tab-btn" data-tab="settings" style="
+                            background: none;
+                            border: none;
+                            color: rgba(255,255,255,0.7);
+                            padding: 0.5rem 1rem;
+                            cursor: pointer;
+                        ">Settings</button>
+                    </div>
+                    
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="galleryTab">
+                        <div class="upload-section">
+                            <label for="imageUpload" style="
+                                display: inline-block;
+                                padding: 0.8rem 1.5rem;
+                                background: white;
+                                color: #667eea;
+                                border-radius: 25px;
+                                cursor: pointer;
+                                font-weight: 600;
+                                margin-right: 1rem;
+                                transition: all 0.3s ease;
+                            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                <i class="fas fa-upload"></i> Upload Images
+                            </label>
+                            <input type="file" id="imageUpload" accept="image/*" multiple style="display: none;">
+                            <button id="clearGalleryBtn" style="
+                                padding: 0.8rem 1.5rem;
+                                background: rgba(255,107,107,0.9);
+                                color: white;
+                                border: none;
+                                border-radius: 25px;
+                                cursor: pointer;
+                                font-weight: 600;
+                                transition: all 0.3s ease;
+                            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                <i class="fas fa-trash"></i> Clear Gallery
+                            </button>
+                            <span id="uploadStatus" style="opacity: 0.8; margin-left: 1rem;">Select images to upload</span>
+                        </div>
+                        <div id="uploadedImages" style="margin-top: 1rem;"></div>
+                    </div>
+                    
+                    <div class="tab-content" id="contentTab" style="display: none;">
+                        <div class="content-management">
+                            <h4 style="margin-bottom: 1rem;">Content Management</h4>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem;">Hero Title:</label>
+                                <input type="text" id="heroTitleInput" placeholder="Enter hero title" style="
+                                    width: 100%;
+                                    padding: 0.5rem;
+                                    border-radius: 5px;
+                                    border: none;
+                                    background: rgba(255,255,255,0.9);
+                                    color: #333;
+                                ">
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem;">Hero Subtitle:</label>
+                                <textarea id="heroSubtitleInput" placeholder="Enter hero subtitle" style="
+                                    width: 100%;
+                                    padding: 0.5rem;
+                                    border-radius: 5px;
+                                    border: none;
+                                    background: rgba(255,255,255,0.9);
+                                    color: #333;
+                                    min-height: 60px;
+                                "></textarea>
+                            </div>
+                            <button id="saveContentBtn" style="
+                                padding: 0.8rem 1.5rem;
+                                background: white;
+                                color: #667eea;
+                                border: none;
+                                border-radius: 25px;
+                                cursor: pointer;
+                                font-weight: 600;
+                                transition: all 0.3s ease;
+                            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                <i class="fas fa-save"></i> Save Content
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="analyticsTab" style="display: none;">
+                        <div class="analytics-section">
+                            <h4 style="margin-bottom: 1rem;">Website Analytics</h4>
+                            <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+                                <div style="margin-bottom: 0.5rem;"><strong>Last Visit:</strong> <span id="lastVisit">Never</span></div>
+                                <div style="margin-bottom: 0.5rem;"><strong>Browser:</strong> <span id="browserInfo">Unknown</span></div>
+                                <div style="margin-bottom: 0.5rem;"><strong>Screen Size:</strong> <span id="screenSize">Unknown</span></div>
+                                <div style="margin-bottom: 0.5rem;"><strong>Session Duration:</strong> <span id="sessionDuration">0:00</span></div>
+                                <div style="margin-bottom: 0.5rem;"><strong>Your IP:</strong> <span id="currentIP">Detecting...</span></div>
+                                <div style="margin-bottom: 0.5rem;"><strong>Unique Visitors:</strong> <span id="uniqueVisitors">0</span></div>
+                            </div>
+                            
+                            <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+                                <h5 style="margin-bottom: 1rem;">Recent Visitors (IP Addresses)</h5>
+                                <div id="visitorList" style="max-height: 200px; overflow-y: auto;">
+                                    <div style="opacity: 0.7;">Loading visitor data...</div>
+                                </div>
+                            </div>
+                            
+                            <button id="resetAnalyticsBtn" style="
+                                padding: 0.5rem 1rem;
+                                background: rgba(255,107,107,0.9);
+                                color: white;
+                                border: none;
+                                border-radius: 20px;
+                                cursor: pointer;
+                                font-weight: 600;
+                                margin-right: 0.5rem;
+                            ">Reset Analytics</button>
+                            <button id="clearVisitorsBtn" style="
+                                padding: 0.5rem 1rem;
+                                background: rgba(255,107,107,0.9);
+                                color: white;
+                                border: none;
+                                border-radius: 20px;
+                                cursor: pointer;
+                                font-weight: 600;
+                            ">Clear Visitors</button>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="settingsTab" style="display: none;">
+                        <div class="settings-section">
+                            <h4 style="margin-bottom: 1rem;">Admin Settings</h4>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem;">
+                                    <input type="checkbox" id="showNotifications" checked> Show Notifications
+                                </label>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem;">
+                                    <input type="checkbox" id="autoSave" checked> Auto-save Changes
+                                </label>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem;">Session Timeout (minutes):</label>
+                                <input type="number" id="sessionTimeout" value="15" min="5" max="60" style="
+                                    padding: 0.5rem;
+                                    border-radius: 5px;
+                                    border: none;
+                                    background: rgba(255,255,255,0.9);
+                                    color: #333;
+                                    width: 100px;
+                                ">
+                            </div>
+                            <button id="logoutBtn" style="
+                                padding: 0.8rem 1.5rem;
+                                background: rgba(255,107,107,0.9);
+                                color: white;
+                                border: none;
+                                border-radius: 25px;
+                                cursor: pointer;
+                                font-weight: 600;
+                                transition: all 0.3s ease;
+                            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </button>
+                        </div>
+                    </div>
                 </div>
             `;
             gallerySection.insertBefore(adminPanel, gallerySection.firstChild);
             
-            // Add upload functionality
+            // Setup admin functionality
+            setupAdminTabs();
+            setupAdminStats();
+            setupContentManagement();
+            setupAnalytics();
+            setupSettings();
             setupImageUpload();
+            setupClearGallery();
         }
         
         // Add delete buttons to existing gallery images
         addDeleteButtonsToGallery();
     }
+    
+    // Load stored images when admin logs in
+    loadStoredImages();
 }
 
 function hideAdminFeatures() {
@@ -1027,12 +1268,20 @@ function confirmDelete(galleryItem) {
 }
 
 function deleteGalleryItem(galleryItem) {
+    // Get image ID before removing the element
+    const imageId = galleryItem.getAttribute('data-image-id');
+    
     // Add fade out animation
     galleryItem.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
     galleryItem.style.opacity = '0';
     galleryItem.style.transform = 'scale(0.8)';
     
     setTimeout(() => {
+        // Remove from localStorage if it has an ID (stored image)
+        if (imageId) {
+            removeImageFromStorage(imageId);
+        }
+        
         galleryItem.remove();
         showDeleteNotification();
     }, 300);
@@ -1078,6 +1327,486 @@ function showDeleteNotification() {
     }, 3000);
 }
 
+// Load stored images from localStorage
+function loadStoredImages() {
+    const storedImages = localStorage.getItem('adminUploadedImages');
+    if (storedImages) {
+        try {
+            const images = JSON.parse(storedImages);
+            const galleryGrid = document.querySelector('.gallery-grid');
+            
+            if (galleryGrid && images.length > 0) {
+                images.forEach((imageData, index) => {
+                    const existingItem = galleryGrid.querySelector(`[data-image-id="${imageData.id}"]`);
+                    if (!existingItem) {
+                        const newItem = document.createElement('div');
+                        newItem.className = 'gallery-item';
+                        newItem.setAttribute('data-image-id', imageData.id);
+                        newItem.innerHTML = `
+                            <div class="gallery-placeholder" style="position: relative;">
+                                <img src="${imageData.src}" alt="Stored image" style="width: 100%; height: 100%; object-fit: cover;">
+                                <div style="
+                                    position: absolute;
+                                    top: 5px;
+                                    right: 5px;
+                                    background: rgba(255,255,255,0.9);
+                                    color: #667eea;
+                                    padding: 5px 10px;
+                                    border-radius: 15px;
+                                    font-size: 0.8rem;
+                                    font-weight: 600;
+                                ">${isAdmin ? 'Stored' : ''}</div>
+                            </div>
+                        `;
+                        
+                        galleryGrid.appendChild(newItem);
+                        
+                        // Add delete button only if admin is logged in
+                        if (isAdmin) {
+                            addDeleteButtonToItem(newItem);
+                        }
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error loading stored images:', error);
+        }
+    }
+}
+
+// Save image to localStorage
+function saveImageToStorage(imageSrc, imageId) {
+    const storedImages = localStorage.getItem('adminUploadedImages');
+    let images = storedImages ? JSON.parse(storedImages) : [];
+    
+    images.push({
+        id: imageId,
+        src: imageSrc,
+        timestamp: new Date().toISOString()
+    });
+    
+    localStorage.setItem('adminUploadedImages', JSON.stringify(images));
+}
+
+// Remove image from localStorage
+function removeImageFromStorage(imageId) {
+    const storedImages = localStorage.getItem('adminUploadedImages');
+    if (storedImages) {
+        let images = JSON.parse(storedImages);
+        images = images.filter(img => img.id !== imageId);
+        localStorage.setItem('adminUploadedImages', JSON.stringify(images));
+    }
+}
+
+// Generate unique ID for images
+function generateImageId() {
+    return 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+// Admin Dashboard Functions
+function setupAdminTabs() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetTab = button.getAttribute('data-tab');
+            
+            // Update button states
+            tabButtons.forEach(btn => {
+                btn.classList.remove('active');
+                btn.style.color = 'rgba(255,255,255,0.7)';
+                btn.style.borderBottom = 'none';
+            });
+            button.classList.add('active');
+            button.style.color = 'white';
+            button.style.borderBottom = '2px solid white';
+            
+            // Update content visibility
+            tabContents.forEach(content => {
+                content.style.display = 'none';
+            });
+            document.getElementById(targetTab + 'Tab').style.display = 'block';
+        });
+    });
+}
+
+function setupAdminStats() {
+    updateAdminStats();
+    // Update stats every 30 seconds
+    setInterval(updateAdminStats, 30000);
+}
+
+function updateAdminStats() {
+    // Update total images
+    const storedImages = localStorage.getItem('adminUploadedImages');
+    const totalImages = storedImages ? JSON.parse(storedImages).length : 0;
+    document.getElementById('totalImages').textContent = totalImages;
+    
+    // Update total visits
+    const totalVisits = parseInt(localStorage.getItem('totalVisits') || '0');
+    document.getElementById('totalVisits').textContent = totalVisits;
+    
+    // Update admin sessions
+    const adminSessions = parseInt(localStorage.getItem('adminSessions') || '0');
+    document.getElementById('adminSessions').textContent = adminSessions;
+    
+    // Update unique visitors
+    updateUniqueVisitors();
+}
+
+function setupContentManagement() {
+    const saveContentBtn = document.getElementById('saveContentBtn');
+    const heroTitleInput = document.getElementById('heroTitleInput');
+    const heroSubtitleInput = document.getElementById('heroSubtitleInput');
+    
+    // Load existing content
+    const savedContent = localStorage.getItem('websiteContent');
+    if (savedContent) {
+        const content = JSON.parse(savedContent);
+        if (heroTitleInput) heroTitleInput.value = content.heroTitle || '';
+        if (heroSubtitleInput) heroSubtitleInput.value = content.heroSubtitle || '';
+    } else {
+        // Load current content from page
+        const heroTitle = document.querySelector('.hero-title');
+        const heroSubtitle = document.querySelector('.hero-subtitle');
+        if (heroTitle && heroTitleInput) heroTitleInput.value = heroTitle.textContent;
+        if (heroSubtitle && heroSubtitleInput) heroSubtitleInput.value = heroSubtitle.textContent;
+    }
+    
+    if (saveContentBtn) {
+        saveContentBtn.addEventListener('click', () => {
+            const content = {
+                heroTitle: heroTitleInput.value,
+                heroSubtitle: heroSubtitleInput.value,
+                lastUpdated: new Date().toISOString()
+            };
+            
+            localStorage.setItem('websiteContent', JSON.stringify(content));
+            
+            // Update page content
+            const heroTitle = document.querySelector('.hero-title');
+            const heroSubtitle = document.querySelector('.hero-subtitle');
+            if (heroTitle) heroTitle.textContent = content.heroTitle;
+            if (heroSubtitle) heroSubtitle.textContent = content.heroSubtitle;
+            
+            showNotification('Content saved successfully!', 'success');
+        });
+    }
+}
+
+function setupAnalytics() {
+    updateAnalytics();
+    
+    const resetAnalyticsBtn = document.getElementById('resetAnalyticsBtn');
+    const clearVisitorsBtn = document.getElementById('clearVisitorsBtn');
+    
+    if (resetAnalyticsBtn) {
+        resetAnalyticsBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to reset all analytics data?')) {
+                localStorage.removeItem('analytics');
+                localStorage.removeItem('totalVisits');
+                updateAnalytics();
+                showNotification('Analytics reset successfully!', 'success');
+            }
+        });
+    }
+    
+    if (clearVisitorsBtn) {
+        clearVisitorsBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear all visitor data?')) {
+                localStorage.removeItem('visitorData');
+                updateVisitorList();
+                showNotification('Visitor data cleared successfully!', 'success');
+            }
+        });
+    }
+}
+
+function updateAnalytics() {
+    const analytics = localStorage.getItem('analytics');
+    if (analytics) {
+        const data = JSON.parse(analytics);
+        document.getElementById('lastVisit').textContent = data.lastVisit || 'Never';
+        document.getElementById('browserInfo').textContent = data.browser || 'Unknown';
+        document.getElementById('screenSize').textContent = data.screenSize || 'Unknown';
+        document.getElementById('sessionDuration').textContent = data.sessionDuration || '0:00';
+        document.getElementById('currentIP').textContent = data.ipAddress || 'Unknown';
+    } else {
+        // Initialize analytics
+        const sessionStart = new Date().toISOString();
+        const browserInfo = navigator.userAgent.split(' ')[0];
+        const screenSize = `${window.screen.width}x${window.screen.height}`;
+        
+        // Get IP address
+        detectIPAddress().then(ipAddress => {
+            const analyticsData = {
+                lastVisit: new Date().toLocaleString(),
+                browser: browserInfo,
+                screenSize: screenSize,
+                sessionStart: sessionStart,
+                sessionDuration: '0:00',
+                ipAddress: ipAddress
+            };
+            
+            localStorage.setItem('analytics', JSON.stringify(analyticsData));
+            updateAnalytics();
+        }).catch(() => {
+            // Fallback if IP detection fails
+            const analyticsData = {
+                lastVisit: new Date().toLocaleString(),
+                browser: browserInfo,
+                screenSize: screenSize,
+                sessionStart: sessionStart,
+                sessionDuration: '0:00',
+                ipAddress: 'Unknown'
+            };
+            
+            localStorage.setItem('analytics', JSON.stringify(analyticsData));
+            updateAnalytics();
+        });
+    }
+    
+    // Update unique visitors count
+    updateUniqueVisitors();
+    
+    // Update visitor list
+    updateVisitorList();
+    
+    // Update session duration every minute
+    setInterval(() => {
+        const analytics = localStorage.getItem('analytics');
+        if (analytics) {
+            const data = JSON.parse(analytics);
+            const sessionStart = new Date(data.sessionStart);
+            const now = new Date();
+            const duration = Math.floor((now - sessionStart) / 1000);
+            const minutes = Math.floor(duration / 60);
+            const seconds = duration % 60;
+            data.sessionDuration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            localStorage.setItem('analytics', JSON.stringify(data));
+            document.getElementById('sessionDuration').textContent = data.sessionDuration;
+        }
+    }, 60000);
+}
+
+// IP Address Detection
+async function detectIPAddress() {
+    try {
+        // Try multiple IP detection services
+        const services = [
+            'https://api.ipify.org?format=json',
+            'https://ipapi.co/json/',
+            'https://api.ip.sb/geoip',
+            'https://httpbin.org/ip'
+        ];
+        
+        for (const service of services) {
+            try {
+                const response = await fetch(service);
+                const data = await response.json();
+                
+                // Extract IP from different response formats
+                let ip = null;
+                if (data.ip) ip = data.ip;
+                else if (data.ip_address) ip = data.ip_address;
+                else if (data.query) ip = data.query;
+                
+                if (ip) {
+                    return ip;
+                }
+            } catch (error) {
+                continue; // Try next service
+            }
+        }
+        
+        // If all services fail, return a fallback
+        return 'Unable to detect';
+    } catch (error) {
+        return 'Detection failed';
+    }
+}
+
+// Visitor Tracking
+function trackVisitor() {
+    const currentIP = document.getElementById('currentIP');
+    if (currentIP && currentIP.textContent !== 'Detecting...' && currentIP.textContent !== 'Unknown') {
+        const visitorData = localStorage.getItem('visitorData');
+        let visitors = visitorData ? JSON.parse(visitorData) : [];
+        
+        const newVisitor = {
+            ip: currentIP.textContent,
+            timestamp: new Date().toISOString(),
+            visitDate: new Date().toLocaleString(),
+            browser: navigator.userAgent.split(' ')[0],
+            screenSize: `${window.screen.width}x${window.screen.height}`
+        };
+        
+        // Check if this IP already visited today
+        const today = new Date().toDateString();
+        const existingVisitor = visitors.find(v => v.ip === newVisitor.ip && new Date(v.timestamp).toDateString() === today);
+        
+        if (!existingVisitor) {
+            visitors.unshift(newVisitor); // Add to beginning
+            
+            // Keep only last 50 visitors
+            if (visitors.length > 50) {
+                visitors = visitors.slice(0, 50);
+            }
+            
+            localStorage.setItem('visitorData', JSON.stringify(visitors));
+        }
+    }
+}
+
+function updateUniqueVisitors() {
+    const visitorData = localStorage.getItem('visitorData');
+    if (visitorData) {
+        const visitors = JSON.parse(visitorData);
+        const uniqueIPs = new Set(visitors.map(v => v.ip));
+        document.getElementById('uniqueVisitors').textContent = uniqueIPs.size;
+    } else {
+        document.getElementById('uniqueVisitors').textContent = '0';
+    }
+}
+
+function updateVisitorList() {
+    const visitorList = document.getElementById('visitorList');
+    const visitorData = localStorage.getItem('visitorData');
+    
+    if (visitorData) {
+        const visitors = JSON.parse(visitorData);
+        if (visitors.length === 0) {
+            visitorList.innerHTML = '<div style="opacity: 0.7;">No visitors tracked yet</div>';
+        } else {
+            visitorList.innerHTML = visitors.map((visitor, index) => `
+                <div style="
+                    padding: 0.5rem;
+                    margin-bottom: 0.5rem;
+                    background: rgba(255,255,255,0.05);
+                    border-radius: 5px;
+                    font-size: 0.85rem;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                ">
+                    <div>
+                        <strong>${visitor.ip}</strong>
+                        <div style="opacity: 0.7; font-size: 0.8rem;">
+                            ${visitor.visitDate} • ${visitor.browser}
+                        </div>
+                    </div>
+                    <div style="
+                        padding: 0.2rem 0.5rem;
+                        background: ${index === 0 ? 'rgba(74, 222, 128, 0.3)' : 'rgba(255,255,255,0.1)'};
+                        border-radius: 10px;
+                        font-size: 0.75rem;
+                    ">
+                        ${index === 0 ? 'Current' : `#${index + 1}`}
+                    </div>
+                </div>
+            `).join('');
+        }
+    } else {
+        visitorList.innerHTML = '<div style="opacity: 0.7;">No visitors tracked yet</div>';
+    }
+}
+
+function setupSettings() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    const sessionTimeoutInput = document.getElementById('sessionTimeout');
+    
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to logout?')) {
+                logout();
+            }
+        });
+    }
+    
+    if (sessionTimeoutInput) {
+        sessionTimeoutInput.addEventListener('change', () => {
+            const newTimeout = parseInt(sessionTimeoutInput.value) * 60 * 1000;
+            LOCK_TIMEOUT = newTimeout;
+            showNotification('Session timeout updated!', 'success');
+        });
+    }
+}
+
+function logout() {
+    sessionStorage.removeItem('isLoggedIn');
+    sessionStorage.removeItem('isAdmin');
+    isAdmin = false;
+    hideAdminFeatures();
+    showNotification('Logged out successfully!', 'info');
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    const colors = {
+        success: 'linear-gradient(135deg, #4ade80, #22c55e)',
+        error: 'linear-gradient(135deg, #ff6b9d, #feca57)',
+        info: 'linear-gradient(135deg, #667eea, #764ba2)'
+    };
+    
+    notification.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${colors[type]};
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 10001;
+            animation: slideInRight 0.5s ease-out;
+            font-size: 0.9rem;
+            max-width: 300px;
+        ">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}" style="font-size: 1.2rem;"></i>
+                <div>
+                    <strong>${type.charAt(0).toUpperCase() + type.slice(1)}</strong><br>
+                    <span style="opacity: 0.9;">${message}</span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.style.animation = 'slideOutRight 0.5s ease-out';
+            setTimeout(() => {
+                notification.remove();
+            }, 500);
+        }
+    }, 3000);
+}
+
+function setupClearGallery() {
+    const clearGalleryBtn = document.getElementById('clearGalleryBtn');
+    if (clearGalleryBtn) {
+        clearGalleryBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear ALL images from the gallery? This action cannot be undone!')) {
+                // Clear from localStorage
+                localStorage.removeItem('adminUploadedImages');
+                
+                // Clear from DOM
+                const galleryItems = document.querySelectorAll('.gallery-item[data-image-id]');
+                galleryItems.forEach(item => item.remove());
+                
+                // Update stats
+                updateAdminStats();
+                
+                showNotification('Gallery cleared successfully!', 'success');
+            }
+        });
+    }
+}
+
 function setupImageUpload() {
     const imageUpload = document.getElementById('imageUpload');
     const uploadStatus = document.getElementById('uploadStatus');
@@ -1094,14 +1823,19 @@ function setupImageUpload() {
                     const reader = new FileReader();
                     
                     reader.onload = function(e) {
+                        // Generate unique ID for this image
+                        const imageId = generateImageId();
+                        const imageSrc = e.target.result;
+                        
                         // Create new gallery item
                         const galleryGrid = document.querySelector('.gallery-grid');
                         if (galleryGrid) {
                             const newItem = document.createElement('div');
                             newItem.className = 'gallery-item';
+                            newItem.setAttribute('data-image-id', imageId);
                             newItem.innerHTML = `
                                 <div class="gallery-placeholder" style="position: relative;">
-                                    <img src="${e.target.result}" alt="Uploaded image" style="width: 100%; height: 100%; object-fit: cover;">
+                                    <img src="${imageSrc}" alt="Uploaded image" style="width: 100%; height: 100%; object-fit: cover;">
                                     <div style="
                                         position: absolute;
                                         top: 5px;
@@ -1131,6 +1865,9 @@ function setupImageUpload() {
                                     addDeleteButtonToItem(newItem);
                                 }
                             }, index * 100);
+                            
+                            // Save image to localStorage for permanent storage
+                            saveImageToStorage(imageSrc, imageId);
                         }
                         
                         // Update status
