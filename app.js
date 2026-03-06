@@ -560,9 +560,7 @@ adminButtonStyle.textContent = `
         margin-right: 5px;
         border-radius: 20px;
     }
-    .admin-login-btn i a:hover{
-        display:none !important;
-    }
+    
     
     @media (max-width: 768px) {
         .admin-login-btn {
@@ -572,6 +570,51 @@ adminButtonStyle.textContent = `
     }
 `;
 document.head.appendChild(adminButtonStyle);
+
+// Delete Button Styling
+const deleteButtonStyle = document.createElement('style');
+deleteButtonStyle.textContent = `
+    .delete-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(255, 107, 107, 0.9);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: all 0.3s ease;
+        z-index: 10;
+        font-size: 14px;
+        box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3);
+    }
+    
+    .gallery-item:hover .delete-btn {
+        opacity: 1;
+    }
+    
+    .delete-btn:hover {
+        background: rgba(255, 59, 48, 0.95);
+        transform: scale(1.1);
+        box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4);
+    }
+    
+    .delete-btn:active {
+        transform: scale(0.95);
+    }
+    
+    .gallery-item {
+        position: relative;
+        overflow: visible;
+    }
+`;
+document.head.appendChild(deleteButtonStyle);
 
 // Love Counter - Anniversary since 11/11/2023
 function updateLoveCounter() {
@@ -935,6 +978,9 @@ function showAdminFeatures() {
             // Add upload functionality
             setupImageUpload();
         }
+        
+        // Add delete buttons to existing gallery images
+        addDeleteButtonsToGallery();
     }
 }
 
@@ -944,6 +990,92 @@ function hideAdminFeatures() {
     if (adminPanel) {
         adminPanel.remove();
     }
+    
+    // Remove delete buttons from gallery
+    removeDeleteButtonsFromGallery();
+}
+
+function addDeleteButtonsToGallery() {
+    const galleryItems = document.querySelectorAll('.gallery-item');
+    galleryItems.forEach((item, index) => {
+        addDeleteButtonToItem(item);
+    });
+}
+
+function addDeleteButtonToItem(item) {
+    // Check if delete button already exists
+    if (!item.querySelector('.delete-btn')) {
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+        deleteBtn.title = 'Delete image';
+        deleteBtn.onclick = () => confirmDelete(item);
+        item.appendChild(deleteBtn);
+    }
+}
+
+function removeDeleteButtonsFromGallery() {
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+    deleteButtons.forEach(btn => btn.remove());
+}
+
+function confirmDelete(galleryItem) {
+    const confirmation = confirm('Are you sure you want to delete this image? This action cannot be undone.');
+    if (confirmation) {
+        deleteGalleryItem(galleryItem);
+    }
+}
+
+function deleteGalleryItem(galleryItem) {
+    // Add fade out animation
+    galleryItem.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+    galleryItem.style.opacity = '0';
+    galleryItem.style.transform = 'scale(0.8)';
+    
+    setTimeout(() => {
+        galleryItem.remove();
+        showDeleteNotification();
+    }, 300);
+}
+
+function showDeleteNotification() {
+    const notification = document.createElement('div');
+    notification.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ff6b9d, #feca57);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 10001;
+            animation: slideInRight 0.5s ease-out;
+            font-size: 0.9rem;
+            max-width: 300px;
+        ">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-check-circle" style="font-size: 1.2rem;"></i>
+                <div>
+                    <strong>Image Deleted</strong><br>
+                    <span style="opacity: 0.9;">Image removed successfully</span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.style.animation = 'slideOutRight 0.5s ease-out';
+            setTimeout(() => {
+                notification.remove();
+            }, 500);
+        }
+    }, 3000);
 }
 
 function setupImageUpload() {
@@ -993,13 +1125,18 @@ function setupImageUpload() {
                                 newItem.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
                                 newItem.style.opacity = '1';
                                 newItem.style.transform = 'scale(1)';
+                                
+                                // Add delete button to new image
+                                if (isAdmin) {
+                                    addDeleteButtonToItem(newItem);
+                                }
                             }, index * 100);
                         }
                         
                         // Update status
                         if (index === files.length - 1) {
                             uploadStatus.textContent = `Successfully uploaded ${files.length} image(s)!`;
-                            uploadStatus.style.color = '#4ade80';
+                            uploadStatus.style.color = '#9339e2';
                             
                             setTimeout(() => {
                                 uploadStatus.textContent = 'Select images to upload';
@@ -1014,4 +1151,3 @@ function setupImageUpload() {
         });
     }
 }
-
